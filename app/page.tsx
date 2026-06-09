@@ -1,79 +1,74 @@
 import Link from 'next/link'
-import { Brain, User, Shield } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import Image from 'next/image'
+import { Shield, User } from 'lucide-react'
+import { HeroSlideshow } from '@/components/hero-slideshow'
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-b from-background to-muted/30">
-      <div className="w-full max-w-4xl space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <Brain className="h-12 w-12 text-primary" />
-            <h1 className="text-4xl font-bold tracking-tight text-foreground">
+    <main className="min-h-screen bg-white flex flex-col">
+      {/* Acceso Psicóloga — botón discreto arriba a la derecha */}
+      <header className="w-full px-6 pt-4 flex justify-end">
+        <Link
+          href="/admin/login"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors px-3 py-2 rounded-lg hover:bg-primary/5"
+        >
+          <Shield className="h-3.5 w-3.5" />
+          Soy Psicóloga
+        </Link>
+      </header>
+
+      {/* Hero — grid 1 columna mobile / 2 columnas desktop */}
+      <section className="flex-1 w-full max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+
+        {/* Logo + Título */}
+        <div className="flex flex-col items-center lg:items-start gap-4">
+          <Image
+            src="/imagenpsicologia.png"
+            alt="Lina Vallejo"
+            width={140}
+            height={140}
+            className="rounded-2xl shadow-md ring-4 ring-primary/25"
+            priority
+          />
+          <div className="text-center lg:text-left">
+            <h1 className="text-4xl sm:text-5xl font-extrabold text-primary tracking-tight">
               PsicoDeporte
             </h1>
+            <div className="h-1.5 w-20 bg-accent rounded-full mt-3 mx-auto lg:mx-0" />
           </div>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-balance">
-            Sistema de gestion de citas para el area de Psicologia Deportiva.
-            Selecciona tu tipo de usuario para continuar.
-          </p>
         </div>
 
-        {/* Role Selection Cards */}
-        <div className="grid md:grid-cols-2 gap-6 pt-4">
-          {/* Athlete Card */}
-          <Link href="/deportista">
-            <Card className="group h-full cursor-pointer transition-all duration-300 hover:shadow-lg hover:border-primary/50 hover:-translate-y-1">
-              <CardHeader className="text-center pb-2">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                  <User className="h-8 w-8 text-primary" />
-                </div>
-                <CardTitle className="text-2xl">Soy Deportista</CardTitle>
-                <CardDescription className="text-base">
-                  Accede a tu panel para solicitar y gestionar tus citas
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="text-center">
-                <ul className="text-sm text-muted-foreground space-y-2">
-                  <li>Ver horarios disponibles</li>
-                  <li>Solicitar nuevas citas</li>
-                  <li>Consultar el estado de tus solicitudes</li>
-                  <li>Recibir notificaciones</li>
-                </ul>
-              </CardContent>
-            </Card>
-          </Link>
-
-          {/* Admin Card */}
-          <Link href="/admin/login">
-            <Card className="group h-full cursor-pointer transition-all duration-300 hover:shadow-lg hover:border-primary/50 hover:-translate-y-1">
-              <CardHeader className="text-center pb-2">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-accent/30 group-hover:bg-accent/50 transition-colors">
-                  <Shield className="h-8 w-8 text-primary" />
-                </div>
-                <CardTitle className="text-2xl">Soy Psicologa</CardTitle>
-                <CardDescription className="text-base">
-                  Panel de administracion para gestionar citas y deportistas
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="text-center">
-                <ul className="text-sm text-muted-foreground space-y-2">
-                  <li>Gestionar solicitudes de citas</li>
-                  <li>Administrar deportistas</li>
-                  <li>Configurar horarios de atencion</li>
-                  <li>Ver calendario de citas</li>
-                </ul>
-              </CardContent>
-            </Card>
-          </Link>
+        {/* Slideshow — col derecha desktop, fila 2 mobile */}
+        <div className="lg:row-span-3 w-full shadow-xl rounded-2xl overflow-hidden">
+          <HeroSlideshow />
         </div>
 
-        {/* Footer */}
-        <p className="text-center text-sm text-muted-foreground pt-8">
-          Area de Psicologia Deportiva - Sistema de Gestion de Citas
+        {/* Descripción profesional */}
+        <p className="text-[15px] text-foreground/70 leading-relaxed text-center lg:text-left">
+          Psicóloga del Deporte en Indervalle, comprometida con el desarrollo integral de los
+          atletas a través del fortalecimiento de habilidades psicológicas que potencian el
+          rendimiento deportivo y el bienestar personal. Mi trabajo se centra en procesos como
+          la autorregulación emocional, la concentración, la atención selectiva, el control de
+          la ansiedad competitiva, la autoconfianza y la toma de decisiones bajo presión. Me
+          caracterizo por un enfoque aplicado, ético y basado en la evidencia, promoviendo
+          entornos deportivos seguros y contribuyendo al crecimiento humano y competitivo de
+          los deportistas.
         </p>
-      </div>
+
+        {/* CTA principal — amarillo */}
+        <Link
+          href="/deportista"
+          className="inline-flex items-center justify-center gap-3 bg-accent hover:bg-accent/85 text-accent-foreground px-10 py-5 rounded-2xl text-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 w-full sm:w-fit"
+        >
+          <User className="h-6 w-6" />
+          Soy Deportista
+        </Link>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-4 text-center text-xs text-muted-foreground border-t border-border">
+        Área de Psicología Deportiva · Indervalle
+      </footer>
     </main>
   )
 }
