@@ -24,7 +24,7 @@ export default function HomePage() {
         <div className="flex flex-col items-center lg:items-start gap-4">
           <Image
             src="/imagenpsicologia.png"
-            alt="Lina Vallejo"
+            alt="PsicoDeporte"
             width={140}
             height={140}
             className="rounded-2xl shadow-md ring-4 ring-primary/25"
