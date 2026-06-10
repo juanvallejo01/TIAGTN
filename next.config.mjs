@@ -14,7 +14,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  serverExternalPackages: ['better-auth', '@better-auth/kysely-adapter', 'kysely', 'pg', '@node-rs/argon2', '@node-rs/bcrypt'],
+  serverExternalPackages: ['better-auth', '@better-auth/kysely-adapter', 'kysely', '@node-rs/argon2', '@node-rs/bcrypt'],
 }
 
 export default nextConfig

@@ -38,7 +38,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-b from-background to-muted/30">
+    <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8 sm:p-6 bg-gradient-to-b from-background to-muted/30">
       <div className="w-full max-w-md space-y-6">
         {/* Back Button */}
         <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors">

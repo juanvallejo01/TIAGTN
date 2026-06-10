@@ -86,7 +86,7 @@ export default function DeportistaPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-b from-background to-muted/30">
+    <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8 sm:p-6 bg-gradient-to-b from-background to-muted/30">
       <div className="w-full max-w-md space-y-6">
         {/* Back Button */}
         <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -147,7 +147,7 @@ export default function DeportistaPage() {
               {/* Register Tab */}
               <TabsContent value="register">
                 <form onSubmit={handleRegister} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="nombre">Nombre</Label>
                       <Input
