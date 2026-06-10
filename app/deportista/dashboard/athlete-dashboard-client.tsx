@@ -330,7 +330,8 @@ export function AthleteDashboardClient({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-7 gap-2">
+            <div className="overflow-x-auto">
+            <div className="min-w-[420px] grid grid-cols-7 gap-1.5">
               {weekDays.map((day, index) => {
                 const daySchedules = getSchedulesForDay(day.getDay())
                 const isToday = isSameDay(day, new Date())
@@ -398,6 +399,7 @@ export function AthleteDashboardClient({
                 )
               })}
             </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -409,17 +411,17 @@ export function AthleteDashboardClient({
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="todas">
-              <TabsList className="mb-4">
-                <TabsTrigger value="todas">
+              <TabsList className="mb-4 grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+                <TabsTrigger value="todas" className="text-xs sm:text-sm py-1.5">
                   Todas ({appointments.length})
                 </TabsTrigger>
-                <TabsTrigger value="pendiente">
+                <TabsTrigger value="pendiente" className="text-xs sm:text-sm py-1.5">
                   Pendientes ({pendingCount})
                 </TabsTrigger>
-                <TabsTrigger value="confirmada">
+                <TabsTrigger value="confirmada" className="text-xs sm:text-sm py-1.5">
                   Confirmadas ({confirmedCount})
                 </TabsTrigger>
-                <TabsTrigger value="rechazada">
+                <TabsTrigger value="rechazada" className="text-xs sm:text-sm py-1.5">
                   Rechazadas ({rejectedCount})
                 </TabsTrigger>
               </TabsList>
