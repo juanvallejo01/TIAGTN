@@ -2,14 +2,28 @@
 
 import { db } from '@/lib/db'
 import { schedules, type Schedule, type NewSchedule } from '@/lib/db/schema'
-import { eq, asc } from 'drizzle-orm'
+import { eq, asc, and } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 
-export async function getSchedules(): Promise<Schedule[]> {
+export async function getSchedules(psychologistId?: string): Promise<Schedule[]> {
+  if (psychologistId) {
+    return db
+      .select()
+      .from(schedules)
+      .where(eq(schedules.psychologistId, psychologistId))
+      .orderBy(asc(schedules.diaSemana), asc(schedules.horaInicio))
+  }
   return db.select().from(schedules).orderBy(asc(schedules.diaSemana), asc(schedules.horaInicio))
 }
 
-export async function getActiveSchedules(): Promise<Schedule[]> {
+export async function getActiveSchedules(psychologistId?: string): Promise<Schedule[]> {
+  if (psychologistId) {
+    return db
+      .select()
+      .from(schedules)
+      .where(and(eq(schedules.activo, true), eq(schedules.psychologistId, psychologistId)))
+      .orderBy(asc(schedules.diaSemana), asc(schedules.horaInicio))
+  }
   return db
     .select()
     .from(schedules)
@@ -47,7 +61,7 @@ export async function deleteSchedule(id: number): Promise<boolean> {
 export async function toggleScheduleStatus(id: number): Promise<Schedule | null> {
   const schedule = await getScheduleById(id)
   if (!schedule) return null
-  
+
   const result = await db
     .update(schedules)
     .set({ activo: !schedule.activo, updatedAt: new Date() })
@@ -56,4 +70,3 @@ export async function toggleScheduleStatus(id: number): Promise<Schedule | null>
   revalidatePath('/admin/horarios')
   return result[0] || null
 }
-

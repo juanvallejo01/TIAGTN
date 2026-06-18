@@ -2,7 +2,7 @@
 
 import { db } from '@/lib/db'
 import { appointments, athletes, notifications, type Appointment, type NewAppointment } from '@/lib/db/schema'
-import { eq, and, desc, gte, lte, sql } from 'drizzle-orm'
+import { eq, and, desc, gte, lte, sql, inArray } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 
 export type AppointmentWithAthlete = Appointment & {
@@ -17,54 +17,48 @@ export type AppointmentWithAthlete = Appointment & {
   }
 }
 
+const appointmentWithAthleteSelect = {
+  id: appointments.id,
+  athleteId: appointments.athleteId,
+  fecha: appointments.fecha,
+  horaInicio: appointments.horaInicio,
+  horaFin: appointments.horaFin,
+  motivo: appointments.motivo,
+  estado: appointments.estado,
+  notas: appointments.notas,
+  createdAt: appointments.createdAt,
+  updatedAt: appointments.updatedAt,
+  athlete: {
+    id: athletes.id,
+    nombre: athletes.nombre,
+    apellido: athletes.apellido,
+    cedula: athletes.cedula,
+    deporte: athletes.deporte,
+    telefono: athletes.telefono,
+    email: athletes.email,
+  },
+}
+
 export async function getAppointments(filters?: {
   estado?: string
   fecha?: string
   athleteId?: number
+  psychologistId?: string
 }): Promise<AppointmentWithAthlete[]> {
-  let query = db
-    .select({
-      id: appointments.id,
-      athleteId: appointments.athleteId,
-      fecha: appointments.fecha,
-      horaInicio: appointments.horaInicio,
-      horaFin: appointments.horaFin,
-      motivo: appointments.motivo,
-      estado: appointments.estado,
-      notas: appointments.notas,
-      createdAt: appointments.createdAt,
-      updatedAt: appointments.updatedAt,
-      athlete: {
-        id: athletes.id,
-        nombre: athletes.nombre,
-        apellido: athletes.apellido,
-        cedula: athletes.cedula,
-        deporte: athletes.deporte,
-        telefono: athletes.telefono,
-        email: athletes.email,
-      },
-    })
+  const conditions = []
+
+  if (filters?.estado) conditions.push(eq(appointments.estado, filters.estado))
+  if (filters?.fecha) conditions.push(eq(appointments.fecha, filters.fecha))
+  if (filters?.athleteId) conditions.push(eq(appointments.athleteId, filters.athleteId))
+  if (filters?.psychologistId) conditions.push(eq(athletes.psychologistId, filters.psychologistId))
+
+  const query = db
+    .select(appointmentWithAthleteSelect)
     .from(appointments)
     .innerJoin(athletes, eq(appointments.athleteId, athletes.id))
     .orderBy(desc(appointments.fecha), desc(appointments.horaInicio))
 
-  const conditions = []
-  
-  if (filters?.estado) {
-    conditions.push(eq(appointments.estado, filters.estado))
-  }
-  if (filters?.fecha) {
-    conditions.push(eq(appointments.fecha, filters.fecha))
-  }
-  if (filters?.athleteId) {
-    conditions.push(eq(appointments.athleteId, filters.athleteId))
-  }
-
-  if (conditions.length > 0) {
-    return query.where(and(...conditions))
-  }
-  
-  return query
+  return conditions.length > 0 ? query.where(and(...conditions)) : query
 }
 
 export async function getAppointmentsByAthleteId(athleteId: number): Promise<Appointment[]> {
@@ -77,27 +71,7 @@ export async function getAppointmentsByAthleteId(athleteId: number): Promise<App
 
 export async function getAppointmentById(id: number): Promise<AppointmentWithAthlete | null> {
   const result = await db
-    .select({
-      id: appointments.id,
-      athleteId: appointments.athleteId,
-      fecha: appointments.fecha,
-      horaInicio: appointments.horaInicio,
-      horaFin: appointments.horaFin,
-      motivo: appointments.motivo,
-      estado: appointments.estado,
-      notas: appointments.notas,
-      createdAt: appointments.createdAt,
-      updatedAt: appointments.updatedAt,
-      athlete: {
-        id: athletes.id,
-        nombre: athletes.nombre,
-        apellido: athletes.apellido,
-        cedula: athletes.cedula,
-        deporte: athletes.deporte,
-        telefono: athletes.telefono,
-        email: athletes.email,
-      },
-    })
+    .select(appointmentWithAthleteSelect)
     .from(appointments)
     .innerJoin(athletes, eq(appointments.athleteId, athletes.id))
     .where(eq(appointments.id, id))
@@ -126,7 +100,6 @@ export async function updateAppointmentStatus(
     .where(eq(appointments.id, id))
     .returning()
 
-  // Create notification for the athlete
   const mensajes: Record<string, string> = {
     confirmada: 'Tu cita ha sido confirmada',
     rechazada: `Tu cita ha sido rechazada${notas ? `: ${notas}` : ''}`,
@@ -143,108 +116,103 @@ export async function updateAppointmentStatus(
   revalidatePath('/admin/solicitudes')
   revalidatePath('/admin/calendario')
   revalidatePath('/deportista/dashboard')
-  
+
   return result[0] || null
 }
 
 export async function getAppointmentsForWeek(startDate: string, endDate: string): Promise<AppointmentWithAthlete[]> {
   return db
-    .select({
-      id: appointments.id,
-      athleteId: appointments.athleteId,
-      fecha: appointments.fecha,
-      horaInicio: appointments.horaInicio,
-      horaFin: appointments.horaFin,
-      motivo: appointments.motivo,
-      estado: appointments.estado,
-      notas: appointments.notas,
-      createdAt: appointments.createdAt,
-      updatedAt: appointments.updatedAt,
-      athlete: {
-        id: athletes.id,
-        nombre: athletes.nombre,
-        apellido: athletes.apellido,
-        cedula: athletes.cedula,
-        deporte: athletes.deporte,
-        telefono: athletes.telefono,
-        email: athletes.email,
-      },
-    })
+    .select(appointmentWithAthleteSelect)
     .from(appointments)
     .innerJoin(athletes, eq(appointments.athleteId, athletes.id))
     .where(and(gte(appointments.fecha, startDate), lte(appointments.fecha, endDate)))
     .orderBy(appointments.fecha, appointments.horaInicio)
 }
 
-export async function getAppointmentStats() {
+export async function getAppointmentStats(psychologistId?: string) {
   const today = new Date().toISOString().split('T')[0]
-  
+
+  if (psychologistId) {
+    const athleteResult = await db
+      .select({ id: athletes.id })
+      .from(athletes)
+      .where(eq(athletes.psychologistId, psychologistId))
+    const ids = athleteResult.map(a => a.id)
+    if (ids.length === 0) return { total: 0, pendientes: 0, confirmadas: 0, hoy: 0 }
+
+    const [total, pendientes, confirmadas, hoy] = await Promise.all([
+      db.select({ count: sql<number>`count(*)` }).from(appointments).where(inArray(appointments.athleteId, ids)),
+      db.select({ count: sql<number>`count(*)` }).from(appointments).where(and(inArray(appointments.athleteId, ids), eq(appointments.estado, 'pendiente'))),
+      db.select({ count: sql<number>`count(*)` }).from(appointments).where(and(inArray(appointments.athleteId, ids), eq(appointments.estado, 'confirmada'))),
+      db.select({ count: sql<number>`count(*)` }).from(appointments).where(and(inArray(appointments.athleteId, ids), eq(appointments.fecha, today))),
+    ])
+    return {
+      total:       Number(total[0]?.count)       || 0,
+      pendientes:  Number(pendientes[0]?.count)  || 0,
+      confirmadas: Number(confirmadas[0]?.count) || 0,
+      hoy:         Number(hoy[0]?.count)         || 0,
+    }
+  }
+
   const [total, pendientes, confirmadas, hoy] = await Promise.all([
     db.select({ count: sql<number>`count(*)` }).from(appointments),
     db.select({ count: sql<number>`count(*)` }).from(appointments).where(eq(appointments.estado, 'pendiente')),
     db.select({ count: sql<number>`count(*)` }).from(appointments).where(eq(appointments.estado, 'confirmada')),
     db.select({ count: sql<number>`count(*)` }).from(appointments).where(eq(appointments.fecha, today)),
   ])
-
   return {
-    total: Number(total[0]?.count) || 0,
-    pendientes: Number(pendientes[0]?.count) || 0,
+    total:       Number(total[0]?.count)       || 0,
+    pendientes:  Number(pendientes[0]?.count)  || 0,
     confirmadas: Number(confirmadas[0]?.count) || 0,
-    hoy: Number(hoy[0]?.count) || 0,
+    hoy:         Number(hoy[0]?.count)         || 0,
   }
 }
 
-export async function getBlockedSlots(): Promise<{ fecha: string; horaInicio: string }[]> {
+export async function getBlockedSlots(psychologistId?: string): Promise<{ fecha: string; horaInicio: string }[]> {
+  const estadoFilter = sql`${appointments.estado} IN ('pendiente', 'confirmada')`
+
+  if (psychologistId) {
+    return db
+      .select({ fecha: appointments.fecha, horaInicio: appointments.horaInicio })
+      .from(appointments)
+      .innerJoin(athletes, eq(appointments.athleteId, athletes.id))
+      .where(and(estadoFilter, eq(athletes.psychologistId, psychologistId)))
+  }
+
   return db
     .select({ fecha: appointments.fecha, horaInicio: appointments.horaInicio })
     .from(appointments)
-    .where(
-      sql`${appointments.estado} IN ('pendiente', 'confirmada')`
-    )
+    .where(estadoFilter)
 }
 
-export async function getConfirmedAppointmentsForRange(startDate: string, endDate: string): Promise<AppointmentWithAthlete[]> {
+export async function getConfirmedAppointmentsForRange(
+  startDate: string,
+  endDate: string,
+  psychologistId?: string
+): Promise<AppointmentWithAthlete[]> {
+  const conditions = [
+    gte(appointments.fecha, startDate),
+    lte(appointments.fecha, endDate),
+    eq(appointments.estado, 'confirmada'),
+  ]
+  if (psychologistId) conditions.push(eq(athletes.psychologistId, psychologistId))
+
   return db
-    .select({
-      id: appointments.id,
-      athleteId: appointments.athleteId,
-      fecha: appointments.fecha,
-      horaInicio: appointments.horaInicio,
-      horaFin: appointments.horaFin,
-      motivo: appointments.motivo,
-      estado: appointments.estado,
-      notas: appointments.notas,
-      createdAt: appointments.createdAt,
-      updatedAt: appointments.updatedAt,
-      athlete: {
-        id: athletes.id,
-        nombre: athletes.nombre,
-        apellido: athletes.apellido,
-        cedula: athletes.cedula,
-        deporte: athletes.deporte,
-        telefono: athletes.telefono,
-        email: athletes.email,
-      },
-    })
+    .select(appointmentWithAthleteSelect)
     .from(appointments)
     .innerJoin(athletes, eq(appointments.athleteId, athletes.id))
-    .where(
-      and(
-        gte(appointments.fecha, startDate),
-        lte(appointments.fecha, endDate),
-        eq(appointments.estado, 'confirmada')
-      )
-    )
+    .where(and(...conditions))
     .orderBy(appointments.fecha, appointments.horaInicio)
 }
 
-export async function getUpcomingAppointments(days = 7): Promise<AppointmentWithAthlete[]> {
+export async function getUpcomingAppointments(days = 7, psychologistId?: string): Promise<AppointmentWithAthlete[]> {
   const today = new Date()
   const future = new Date()
   future.setDate(today.getDate() + days)
   return getConfirmedAppointmentsForRange(
     today.toISOString().split('T')[0],
-    future.toISOString().split('T')[0]
+    future.toISOString().split('T')[0],
+    psychologistId
   )
 }
 

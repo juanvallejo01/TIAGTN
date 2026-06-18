@@ -13,16 +13,17 @@ import { Button } from '@/components/ui/button'
 
 export default async function AdminDashboardPage() {
   const session = await auth.api.getSession({ headers: await headers() })
+  const userId = session!.user.id
+
   const [stats, pendingAppointments, upcomingAppointments, athletes] = await Promise.all([
-    getAppointmentStats(),
-    getAppointments({ estado: 'pendiente' }),
-    getUpcomingAppointments(7),
-    getAthletes(),
+    getAppointmentStats(userId),
+    getAppointments({ estado: 'pendiente', psychologistId: userId }),
+    getUpcomingAppointments(7, userId),
+    getAthletes(userId),
   ])
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Header */}
       <header className="border-b bg-card px-4 py-3 flex items-center gap-4">
         <SidebarTrigger />
         <div>
@@ -33,9 +34,7 @@ export default async function AdminDashboardPage() {
         </div>
       </header>
 
-      {/* Content */}
       <main className="flex-1 p-6 space-y-6">
-        {/* Stats Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -72,19 +71,17 @@ export default async function AdminDashboardPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Deportistas</CardTitle>
+              <CardTitle className="text-sm font-medium">Mis Deportistas</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{athletes.length}</div>
-              <p className="text-xs text-muted-foreground">registrados en el sistema</p>
+              <p className="text-xs text-muted-foreground">asignados a ti</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Two-column section */}
         <div className="grid gap-6 lg:grid-cols-2">
-          {/* Pending Requests */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Solicitudes Pendientes</CardTitle>
@@ -120,7 +117,6 @@ export default async function AdminDashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Upcoming Confirmed Appointments */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Proximas Citas</CardTitle>

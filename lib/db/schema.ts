@@ -64,6 +64,7 @@ export const athletes = pgTable('athletes', {
   telefono: text('telefono'),
   email: text('email'),
   activo: boolean('activo').notNull().default(true),
+  psychologistId: text('psychologistId').references(() => user.id),
   createdAt: timestamp('createdAt').notNull().defaultNow(),
   updatedAt: timestamp('updatedAt').notNull().defaultNow(),
 })
@@ -74,6 +75,7 @@ export const schedules = pgTable('schedules', {
   horaInicio: time('horaInicio').notNull(),
   horaFin: time('horaFin').notNull(),
   activo: boolean('activo').notNull().default(true),
+  psychologistId: text('psychologistId').references(() => user.id),
   createdAt: timestamp('createdAt').notNull().defaultNow(),
   updatedAt: timestamp('updatedAt').notNull().defaultNow(),
 })

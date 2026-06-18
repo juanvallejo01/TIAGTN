@@ -18,11 +18,13 @@ export default async function AthleteDashboard({ searchParams }: PageProps) {
   const athlete = await getAthleteById(athleteId)
   if (!athlete || !athlete.activo) redirect('/deportista')
 
+  const pid = athlete.psychologistId ?? undefined
+
   const [appointments, notifications, schedules, blockedSlots] = await Promise.all([
     getAppointmentsByAthleteId(athleteId),
     getNotificationsByAthleteId(athleteId),
-    getActiveSchedules(),
-    getBlockedSlots(),
+    getActiveSchedules(pid),
+    getBlockedSlots(pid),
   ])
 
   return (

@@ -32,6 +32,7 @@ type ViewMode = 'day' | 'week' | 'month'
 interface CalendarioClientProps {
   initialAppointments: AppointmentWithAthlete[]
   schedules: Schedule[]
+  psychologistId: string
 }
 
 const APT_CLASS = 'bg-green-100 border-green-300 text-green-800 dark:bg-green-900/30 dark:border-green-700 dark:text-green-400'
@@ -283,7 +284,7 @@ function MonthView({
 
 // ─── main component ──────────────────────────────────────────────────────────
 
-export function CalendarioClient({ initialAppointments, schedules }: CalendarioClientProps) {
+export function CalendarioClient({ initialAppointments, schedules, psychologistId }: CalendarioClientProps) {
   const [appointments, setAppointments] = useState(initialAppointments)
   const [viewMode, setViewMode]         = useState<ViewMode>('week')
   const [currentDate, setCurrentDate]   = useState(new Date())
@@ -294,7 +295,7 @@ export function CalendarioClient({ initialAppointments, schedules }: CalendarioC
     setIsLoading(true)
     try {
       const { start, end } = getRange(date, mode)
-      const data = await getConfirmedAppointmentsForRange(start, end)
+      const data = await getConfirmedAppointmentsForRange(start, end, psychologistId)
       setAppointments(data)
     } catch (e) {
       console.error(e)

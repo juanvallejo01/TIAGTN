@@ -53,9 +53,10 @@ import type { Schedule } from '@/lib/db/schema'
 
 interface HorariosClientProps {
   initialSchedules: Schedule[]
+  psychologistId: string
 }
 
-export function HorariosClient({ initialSchedules }: HorariosClientProps) {
+export function HorariosClient({ initialSchedules, psychologistId }: HorariosClientProps) {
   const [schedules, setSchedules] = useState(initialSchedules)
   const [isLoading, setIsLoading] = useState(false)
   const [showAddDialog, setShowAddDialog] = useState(false)
@@ -83,8 +84,9 @@ export function HorariosClient({ initialSchedules }: HorariosClientProps) {
         horaInicio: formData.horaInicio,
         horaFin: formData.horaFin,
         activo: true,
+        psychologistId,
       })
-      const updated = await getSchedules()
+      const updated = await getSchedules(psychologistId)
       setSchedules(updated)
       setShowAddDialog(false)
       resetForm()
@@ -104,7 +106,7 @@ export function HorariosClient({ initialSchedules }: HorariosClientProps) {
         horaInicio: formData.horaInicio,
         horaFin: formData.horaFin,
       })
-      const updated = await getSchedules()
+      const updated = await getSchedules(psychologistId)
       setSchedules(updated)
       setEditingSchedule(null)
       resetForm()
@@ -120,7 +122,7 @@ export function HorariosClient({ initialSchedules }: HorariosClientProps) {
     setIsLoading(true)
     try {
       await deleteSchedule(deletingSchedule.id)
-      const updated = await getSchedules()
+      const updated = await getSchedules(psychologistId)
       setSchedules(updated)
       setDeletingSchedule(null)
     } catch (error) {
@@ -133,7 +135,7 @@ export function HorariosClient({ initialSchedules }: HorariosClientProps) {
   const handleToggleStatus = async (schedule: Schedule) => {
     try {
       await toggleScheduleStatus(schedule.id)
-      const updated = await getSchedules()
+      const updated = await getSchedules(psychologistId)
       setSchedules(updated)
     } catch (error) {
       console.error('Error toggling status:', error)

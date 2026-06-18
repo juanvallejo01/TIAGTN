@@ -52,6 +52,7 @@ import type { Athlete } from '@/lib/db/schema'
 
 interface AthletesClientProps {
   initialAthletes: Athlete[]
+  psychologistId: string
 }
 
 const emptyForm = {
@@ -64,7 +65,7 @@ const emptyForm = {
   email: '',
 }
 
-export function AthletesClient({ initialAthletes }: AthletesClientProps) {
+export function AthletesClient({ initialAthletes, psychologistId }: AthletesClientProps) {
   const [athletes, setAthletes] = useState(initialAthletes)
   const [search, setSearch] = useState('')
   const [deporteFilter, setDeporteFilter] = useState('all')
@@ -95,7 +96,7 @@ export function AthletesClient({ initialAthletes }: AthletesClientProps) {
   const resetForm = () => setFormData(emptyForm)
 
   const reload = async () => {
-    const updated = await getAthletes()
+    const updated = await getAthletes(psychologistId)
     setAthletes(updated)
   }
 
@@ -111,6 +112,7 @@ export function AthletesClient({ initialAthletes }: AthletesClientProps) {
         telefono: formData.telefono || null,
         email: formData.email || null,
         activo: true,
+        psychologistId,
       })
       await reload()
       setShowAddDialog(false)

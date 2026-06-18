@@ -2,22 +2,15 @@
 
 import { db } from '@/lib/db'
 import { athletes, type Athlete, type NewAthlete } from '@/lib/db/schema'
-import { eq, ilike, or, desc } from 'drizzle-orm'
+import { eq, ilike, or, desc, and } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 
-export async function getAthletes(search?: string): Promise<Athlete[]> {
-  if (search) {
+export async function getAthletes(psychologistId?: string): Promise<Athlete[]> {
+  if (psychologistId) {
     return db
       .select()
       .from(athletes)
-      .where(
-        or(
-          ilike(athletes.nombre, `%${search}%`),
-          ilike(athletes.apellido, `%${search}%`),
-          ilike(athletes.cedula, `%${search}%`),
-          ilike(athletes.deporte, `%${search}%`)
-        )
-      )
+      .where(eq(athletes.psychologistId, psychologistId))
       .orderBy(desc(athletes.createdAt))
   }
   return db.select().from(athletes).orderBy(desc(athletes.createdAt))
@@ -58,7 +51,7 @@ export async function deleteAthlete(id: number): Promise<boolean> {
 export async function toggleAthleteStatus(id: number): Promise<Athlete | null> {
   const athlete = await getAthleteById(id)
   if (!athlete) return null
-  
+
   const result = await db
     .update(athletes)
     .set({ activo: !athlete.activo, updatedAt: new Date() })

@@ -39,6 +39,7 @@ import { getAppointments, updateAppointmentStatus, type AppointmentWithAthlete }
 
 interface SolicitudesClientProps {
   initialAppointments: AppointmentWithAthlete[]
+  psychologistId: string
 }
 
 const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
@@ -49,7 +50,7 @@ const statusConfig: Record<string, { label: string; variant: 'default' | 'second
   completada: { label: 'Completada', variant: 'default' },
 }
 
-export function SolicitudesClient({ initialAppointments }: SolicitudesClientProps) {
+export function SolicitudesClient({ initialAppointments, psychologistId }: SolicitudesClientProps) {
   const router = useRouter()
   const [appointments, setAppointments] = useState(initialAppointments)
   const [search, setSearch] = useState('')
@@ -76,7 +77,7 @@ export function SolicitudesClient({ initialAppointments }: SolicitudesClientProp
     setIsLoading(true)
     try {
       await updateAppointmentStatus(selectedAppointment.id, 'confirmada')
-      const updated = await getAppointments()
+      const updated = await getAppointments({ psychologistId })
       setAppointments(updated)
       setSelectedAppointment(null)
       setActionType(null)
@@ -92,7 +93,7 @@ export function SolicitudesClient({ initialAppointments }: SolicitudesClientProp
     setIsLoading(true)
     try {
       await updateAppointmentStatus(selectedAppointment.id, 'rechazada', rejectReason || undefined)
-      const updated = await getAppointments()
+      const updated = await getAppointments({ psychologistId })
       setAppointments(updated)
       setSelectedAppointment(null)
       setActionType(null)
@@ -107,7 +108,7 @@ export function SolicitudesClient({ initialAppointments }: SolicitudesClientProp
   const handleComplete = async (appointment: AppointmentWithAthlete) => {
     try {
       await updateAppointmentStatus(appointment.id, 'completada')
-      const updated = await getAppointments()
+      const updated = await getAppointments({ psychologistId })
       setAppointments(updated)
     } catch (error) {
       console.error('Error completing appointment:', error)
